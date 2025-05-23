@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import os
 
 import models
+from routes.auth import get_current_user
 from schemas import SMSResponse, SMSTemplate
 
 
@@ -125,22 +126,22 @@ def sms_template(template: SMSTemplate, user_id: str, db: dep_db):
     return sms_template
 
 @user_router.get("/smstemplate", response_model=List[SMSTemplate])
-def fetch_sms_templates(user_id: int, db: dep_db):
-    user = db.query(models.Users).filter(models.Users.id == user_id).first()
+def fetch_sms_templates(user_id: int, db: dep_db, user_session=Depends(get_current_user)):
+    user = db.query(models.Users).filter(models.Users.id == user_session.user_id).first()
     if not user:
         raise HTTPException(detail="User not Found", status_code=404)
     
-    templates = db.query(models.SmsTemplates).filter(models.SmsTemplates.user_id == user_id).all()
+    templates = db.query(models.SmsTemplates).filter(models.SmsTemplates.user_id == user_session.user_id).all()
     
     return templates
 
 @user_router.put("/sms_temp_update")
-def sms_template_update(user_id: str, new_content: str, db: dep_db):
-    user = db.query(models.Users).filter(models.Users.id == user_id).first()
+def sms_template_update(user_id: str, new_content: str, db: dep_db, user_session=Depends(get_current_user)):
+    user = db.query(models.Users).filter(models.Users.id == user_session.user_id).first()
     if not user:
         raise HTTPException(detail="User not Found", status_code=404)
     
-    template = db.query(models.SmsTemplates).filter(models.SmsTemplates.user_id == user_id).first()
+    template = db.query(models.SmsTemplates).filter(models.SmsTemplates.user_id == user_session.user_id).first()
     if not template:
         raise HTTPException(detail="No template found", status_code=404)
     
@@ -158,8 +159,8 @@ def sms_template_update(user_id: str, new_content: str, db: dep_db):
     
 
 @user_router.delete("/sms_template")
-def delete_sms_template(template_id: int, user_id: str, db: dep_db):
-    user = db.query(models.Users).filter(models.Users.id == user_id).first()
+def delete_sms_template(template_id: int, user_id: str, db: dep_db, user_session=Depends(get_current_user)):
+    user = db.query(models.Users).filter(models.Users.id == user_session.user_id).first()
     if not user:
         raise HTTPException(detail="User not Found", status_code=404)
     
@@ -177,8 +178,8 @@ def delete_sms_template(template_id: int, user_id: str, db: dep_db):
 
 #============= SMS TEMPLATE ENDPOINTS START ===================================================
 @user_router.get("/delivery_report")
-def delivery_report(user_id: str, sms_id : int, db: dep_db):
-    user = db.query(models.Users).filter(models.Users.id == user_id).first()
+def delivery_report(user_id: str, sms_id : int, db: dep_db, user_session=Depends(get_current_user)):
+    user = db.query(models.Users).filter(models.Users.id == user_session.user_id).first()
     if not user:
         raise HTTPException(detail="User not Found", status_code=404)
     
@@ -193,11 +194,11 @@ def delivery_report(user_id: str, sms_id : int, db: dep_db):
 
 
 @user_router.get("/sms_history", response_model=List[SMSResponse])
-def sms_history(user_id: str, db: dep_db):
-    user = db.query(models.Users).filter(models.Users.id == user_id).first()
+def sms_history(user_id: str, db: dep_db, user_session=Depends(get_current_user)):
+    user = db.query(models.Users).filter(models.Users.id == user_session.user_id).first()
     if not user:
         raise HTTPException(detail="User not Found", status_code=404)
-    message = db.query(models.SmsMessages).filter(models.SmsMessages.user_id == user_id).all()
+    message = db.query(models.SmsMessages).filter(models.SmsMessages.user_id == user_session.user_id).all()
     if not message:
         raise HTTPException(detail="No message found", status_code=404)
     
@@ -205,8 +206,8 @@ def sms_history(user_id: str, db: dep_db):
 
 
 @user_router.delete("/delivery_report")
-def delete_delivery_report(user_id: int, db: dep_db):
-    user = db.query(models.Users).filter(models.Users.id == user_id).first()
+def delete_delivery_report(user_id: int, db: dep_db, user_session=Depends(get_current_user)):
+    user = db.query(models.Users).filter(models.Users.id == user_session.user_id).first()
     if not user:
         raise HTTPException(detail="User not Found", status_code=404)
     
@@ -222,8 +223,8 @@ def delete_delivery_report(user_id: int, db: dep_db):
     }
     
 @user_router.delete("/sms_history")
-def delete_sms_history(message_id: int, user_id: str, db: dep_db):
-    user = db.query(models.Users).filter(models.Users.id == user_id).first()
+def delete_sms_history(message_id: int, user_id: str, db: dep_db, user_session=Depends(get_current_user)):
+    user = db.query(models.Users).filter(models.Users.id == user_session.user_id).first()
     if not user:
         raise HTTPException(detail="User not Found", status_code=404)
     

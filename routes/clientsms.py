@@ -8,6 +8,8 @@ from luco.sms_send import LucoSMS
 from models import Users
 from rate_limiter.rate_limiter import api_rate_limit
 
+
+
 luco_router = APIRouter(
     prefix="/api/v1/client",
     tags=["Client SMS API"]
@@ -22,6 +24,7 @@ async def client_send_sms(
     sms: SMSMessageCreate,
     current_user: Users = Depends(get_api_user),
     db: Session = Depends(get_db)
+    
 ):
     if current_user.wallet_balance < SMS_COST * len(sms.recipients):
         raise HTTPException(
