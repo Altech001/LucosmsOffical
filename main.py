@@ -31,7 +31,7 @@ load_dotenv()
 Base.metadata.create_all(bind=engine)
 
 
-APP_URL = os.environ.get("APP_URL", "https://luco-sms-api.onrender.com")
+APP_URL = os.environ.get("APP_URL", "https://lucosms-api.onrender.com")
 
 
 PING_INTERVAL = 600
