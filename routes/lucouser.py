@@ -31,40 +31,25 @@ SMS_COST = 32.0
 dep_db  = Annotated[Session, Depends(get_db)]
 
 
-
 #==============ACCOUNT ENDPOINTS START =======================================================
-# @user_router.post("/topup")
-# def topup_wallet(topup: TopupRequest, user_id: int, db: Session = Depends(get_db)):
-#     user = db.query(models.Users).filter(models.Users.id == user_id).first()
-#     if not user:
-#         raise HTTPException(status_code=404, detail="User not Found")
-    
-#     user.wallet_balance += topup.amount
-#     transaction = models.Transactions(
-#         user_id=user_id,
-#         amount=topup.amount,
-#         transaction_type="topup"
-#     )
-#     db.add(transaction)
-#     db.commit()
-#     return {"message": "Wallet topped up successfully", "new_balance": user.wallet_balance}
-
-
+9
 @user_router.get("/wallet-balance")
-def get_wallet_balance(user_id: str, db: Session = Depends(get_db)):
-    user = db.query(models.Users).filter(models.Users.id == user_id).first()
+def get_wallet_balance(user_session=Depends(get_current_user), db: Session = Depends(get_db)):
+    # user = db.query(models.Users).filter(models.Users.id == user_id).first()
+    user = db.query(models.Users).filter(models.Users.clerk_user_id == user_session.user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return {"balance": user.wallet_balance}
 
 
 @user_router.get("/transaction_history")
-def transaction_history(user_id: str, db: dep_db, skip : int,limit: int = 10):
-    user = db.query(models.Users).filter(models.Users.id == user_id).first()
+def transaction_history( db: dep_db, skip : int,limit: int = 10,user_session=Depends(get_current_user)):
+    # user = db.query(models.Users).filter(models.Users.id == user_id).first()
+    user = db.query(models.Users).filter(models.Users.clerk_user_id == user_session.user_id).first()
     if not user:
         raise HTTPException(detail="User not Found", status_code=404)
     
-    transactions = db.query(models.Transactions).filter(models.Transactions.user_id == user_id).all()
+    transactions = db.query(models.Transactions).filter(models.Transactions.user_id == user_session.user_id).all()
     transactions = transactions[skip:skip+limit]
     if not transactions:
         raise HTTPException(detail="No transactions found", status_code=404)
@@ -73,8 +58,9 @@ def transaction_history(user_id: str, db: dep_db, skip : int,limit: int = 10):
 
 
 @user_router.delete("/transcation_delete")
-def delete_transaction(transaction_id: int, user_id: str, db: dep_db):
-    user = db.query(models.Users).filter(models.Users.id == user_id).first()
+def delete_transaction(transaction_id: int, user_id: str, db: Session = Depends(get_db), user_session=Depends(get_current_user)):
+    # user = db.query(models.Users).filter(models.Users.id == user_id).first()
+    user = db.query(models.Users).filter(models.Users.clerk_user_id == user_session.user_id).first()
     if not user:
         raise HTTPException(detail="User not Found", status_code=404)
     
@@ -88,8 +74,8 @@ def delete_transaction(transaction_id: int, user_id: str, db: dep_db):
     }
     
 @user_router.delete("/all_transaction")
-def delete_all_transactions(user_id: str, db: dep_db):
-    user = db.query(models.Users).filter(models.Users.id == user_id).first()
+def delete_all_transactions(user_id: str, db: Session = Depends(get_db),user_session=Depends(get_current_user)):
+    user = db.query(models.Users).filter(models.Users.clerk_user_id == user_session.user_id).first()
     if not user:
         raise HTTPException(detail="User not Found", status_code=404)
     
@@ -108,8 +94,10 @@ def delete_all_transactions(user_id: str, db: dep_db):
 #============= SMS TEMPLATE ENDPOINTS START ===================================================
 
 @user_router.post("/smstemplate")
-def sms_template(template: SMSTemplate, user_id: str, db: dep_db):
-    user = db.query(models.Users).filter(models.Users.id == user_id).first()
+def sms_template(template: SMSTemplate, user_id: str, db: Session = Depends(get_db),user_session=Depends(get_current_user)):
+    # user = db.query(models.Users).filter(models.Users.id == user_id).first()
+    user = db.query(models.Users).filter(models.Users.clerk_user_id == user_session.user_id).first()
+    
     if not user:
         raise HTTPException(detail="User not Found", status_code=404)
     
@@ -127,7 +115,8 @@ def sms_template(template: SMSTemplate, user_id: str, db: dep_db):
 
 @user_router.get("/smstemplate", response_model=List[SMSTemplate])
 def fetch_sms_templates(user_id: int, db: dep_db, user_session=Depends(get_current_user)):
-    user = db.query(models.Users).filter(models.Users.id == user_session.user_id).first()
+    # user = db.query(models.Users).filter(models.Users.id == user_session.user_id).first()
+    user = db.query(models.Users).filter(models.Users.clerk_user_id == user_session.user_id).first()
     if not user:
         raise HTTPException(detail="User not Found", status_code=404)
     
