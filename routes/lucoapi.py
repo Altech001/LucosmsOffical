@@ -10,7 +10,7 @@ from rate_limiter.rate_limiter import limiter
 
 router = APIRouter(
     prefix="/api_key",
-    tags=["Luco SMS API Keys"]
+    tags=["LucoSMS API Keys"]
 )
 
 def generate_api_key(length: int = 32) -> str:

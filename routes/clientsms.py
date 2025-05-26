@@ -12,15 +12,15 @@ from rate_limiter.rate_limiter import api_rate_limit
 
 luco_router = APIRouter(
     prefix="/api/v1/client",
-    tags=["Client SMS API"]
+    tags=["LucoSMS API"]
 )
 
 SMS_COST = 32.0
 
 @luco_router.post("/send-sms", response_model=SMSMessageResponse)
-@api_rate_limit()  # Apply API rate limiting (100/minute)
+# @api_rate_limit()  # Apply API rate limiting (100/minute)
 async def client_send_sms(
-    request: Request,
+    # request: Request,
     sms: SMSMessageCreate,
     current_user: Users = Depends(get_api_user),
     db: Session = Depends(get_db)
@@ -86,7 +86,18 @@ async def client_send_sms(
         
         db.commit()
         
-        return sms_messages[0]  # Return first message as response
+        return {
+            "status": "success",
+            "message": "SMS sent successfully",
+            "recipients": sms.recipients,
+            "recipients_count": len(sms.recipients),
+            "total_cost": total_cost,
+            "delivery_status": "delivered",
+            "id": str(sms_messages[0].id),  # Convert UUID to string
+            "user_id": int(str(current_user.id).replace('-', '')[:8], 16),  # Convert UUID to integer
+            "cost": SMS_COST,
+            "created_at": sms_messages[0].created_at
+        }
         
     except Exception as e:
         raise HTTPException(
