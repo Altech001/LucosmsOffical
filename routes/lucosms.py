@@ -39,7 +39,7 @@ sms_router = APIRouter(
 
 load_dotenv()
 
-SANDBOX_API_KEY = os.getenv("SANDBOX_API_KEY")
+# SANDBOX_API_KEY = os.getenv("SANDBOX_API_KEY")
 
 user_router = APIRouter(
     prefix="/api/v1",
@@ -87,7 +87,7 @@ async def send_sms(
         sms_messages = []
         for recipient in sms.recipient:
             sms_message = models.SmsMessages(
-                user_id=user.id,
+                user_id=user.clerk_user_id,
                 recipient=recipient,
                 message=sms.message,
                 status="sent",
@@ -96,7 +96,7 @@ async def send_sms(
             sms_messages.append(sms_message)
             
             transaction = models.Transactions(
-                user_id=user.id,
+                user_id=user.clerk_user_id,
                 amount=-SMS_COST,
                 transaction_type="sms_deduction"
             )

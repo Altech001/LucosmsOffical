@@ -93,8 +93,8 @@ async def client_send_sms(
             "recipients_count": len(sms.recipients),
             "total_cost": total_cost,
             "delivery_status": "delivered",
-            "id": str(sms_messages[0].id),  # Convert UUID to string
-            "user_id": int(str(current_user.id).replace('-', '')[:8], 16),  # Convert UUID to integer
+            "id": str(sms_messages[0].id),
+            "user_id": int(str(current_user.id).replace('-', '')[:8], 16),
             "cost": SMS_COST,
             "created_at": sms_messages[0].created_at
         }
