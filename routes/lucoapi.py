@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session # Assuming this exists in schemas.py
+from sqlalchemy.orm import Session
 import secrets
 import string
 
 from database import get_db
 from models import APIKeys, Users
-
+import models
+from routes.auth import get_current_user
 from rate_limiter.rate_limiter import limiter
 
 router = APIRouter(
@@ -19,31 +20,24 @@ def generate_api_key(length: int = 32) -> str:
     random_key = ''.join(secrets.choice(alphabet) for _ in range(length))
     return f"Luco_{random_key}"
 
-
-
-# @limiter.limit("10/minute")
-
 @router.post("/generate", response_model=dict)
-def generate_user_api_key(user_id: str, db: Session = Depends(get_db)):
+# @limiter.limit("10/minute")
+def generate_user_api_key(user_session=Depends(get_current_user), db: Session = Depends(get_db)):
     """
     Generate a new API key for a user
     """
-    # Verify user exists
-    user = db.query(Users).filter(Users.id == user_id).first()
+    user = db.query(models.Users).filter(models.Users.clerk_user_id == user_session.user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Generate new API key
     api_key = generate_api_key()
     
-    # Check if key already exists (unlikely due to randomness, but good practice)
     existing_key = db.query(APIKeys).filter(APIKeys.key == api_key).first()
     if existing_key:
         raise HTTPException(status_code=400, detail="API key generation collision occurred")
 
-    # Create new API key entry
     new_api_key = APIKeys(
-        user_id=user_id,
+        user_id=user.id,
         key=api_key,
         is_active=True
     )
@@ -58,31 +52,33 @@ def generate_user_api_key(user_id: str, db: Session = Depends(get_db)):
     }
 
 @router.get("/list", response_model=list[dict])
-def list_api_keys(user_id: str, db: Session = Depends(get_db)):
+# @limiter.limit("10/minute")
+def list_api_keys(user_session=Depends(get_current_user), db: Session = Depends(get_db)):
     """
     List all API keys for a user
     """
-    user = db.query(Users).filter(Users.id == user_id).first()
+    user = db.query(models.Users).filter(models.Users.clerk_user_id == user_session.user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    api_keys = db.query(APIKeys).filter(APIKeys.user_id == user_id).all()
+    api_keys = db.query(APIKeys).filter(APIKeys.user_id == user.id).all()
     
     return [{
         "id": key.id,
-        # "key": key.key[-8:],  # Show only last 8 characters for security
-        "key": key.key,
+        "key": key.key[-8:],  # Mask key, show last 8 characters
+        "full_key": key.key,  # Include full key for copying (securely handled in frontend)
         "is_active": key.is_active,
     } for key in api_keys]
 
 @router.put("/deactivate/{key_id}", response_model=dict)
-def deactivate_api_key(key_id: int, user_id: str, db: Session = Depends(get_db)):
+# @limiter.limit("10/minute")
+def deactivate_api_key(key_id: int, user_session=Depends(get_current_user), db: Session = Depends(get_db)):
     """
     Deactivate an existing API key
     """
     api_key = db.query(APIKeys).filter(
         APIKeys.id == key_id,
-        APIKeys.user_id == user_id
+        APIKeys.user_id == db.query(Users.id).filter(Users.clerk_user_id == user_session.user_id).scalar_subquery()
     ).first()
     
     if not api_key:
@@ -97,13 +93,18 @@ def deactivate_api_key(key_id: int, user_id: str, db: Session = Depends(get_db))
     return {"message": "API key deactivated successfully"}
 
 @router.delete("/delete/{key_id}", response_model=dict)
-def delete_api_key(key_id: int, user_id: str, db: Session = Depends(get_db)):
+# @limiter.limit("10/minute")
+def delete_api_key(key_id: int, user_session=Depends(get_current_user), db: Session = Depends(get_db)):
     """
     Delete an existing API key
     """
+    user = db.query(models.Users).filter(models.Users.clerk_user_id == user_session.user_id).first()
+    if not user:
+        raise HTTPException(detail="User not Found", status_code=404)
+    
     api_key = db.query(APIKeys).filter(
         APIKeys.id == key_id,
-        APIKeys.user_id == user_id
+        APIKeys.user_id == user.id  # Ensure the key belongs to the user
     ).first()
     
     if not api_key:

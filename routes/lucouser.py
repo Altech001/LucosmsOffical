@@ -24,18 +24,20 @@ user_router = APIRouter(
     tags=["Luco SMS"]
 )
 
+
+
 SMS_COST = 32.0
 
-#Injection Dependency =================================================
+#Injection Dependency =======================================================================
 # dep_db: Annotated[Session, Depends(get_db)] = Depends(get_db)
 dep_db  = Annotated[Session, Depends(get_db)]
 
 
 #==============ACCOUNT ENDPOINTS START =======================================================
-9
+
 @user_router.get("/wallet-balance")
 def get_wallet_balance(user_session=Depends(get_current_user), db: Session = Depends(get_db)):
-    # user = db.query(models.Users).filter(models.Users.id == user_id).first()
+
     user = db.query(models.Users).filter(models.Users.clerk_user_id == user_session.user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -98,7 +100,7 @@ def sms_template(template: SMSTemplate, db: Session = Depends(get_db), user_sess
     sms_template = models.SmsTemplates(
         user_id=user.id,
         name=template.name,
-        content=template.content
+        content=template.cotent
     )
     db.add(sms_template)
     db.commit()
@@ -186,14 +188,14 @@ def delete_sms_template(template_id: int, db: dep_db, user_session=Depends(get_c
 
 #============= SMS TEMPLATE ENDPOINTS START ===================================================
 @user_router.get("/delivery_report")
-def delivery_report(sms_id: int, db: dep_db, user_session=Depends(get_current_user)):
+def delivery_report( db: dep_db, user_session=Depends(get_current_user)):
     user = db.query(models.Users).filter(models.Users.clerk_user_id == user_session.user_id).first()
     if not user:
         raise HTTPException(detail="User not Found", status_code=404)
     
     delivery_reports = db.query(models.SmsDeliveryReports).filter(
-        models.SmsDeliveryReports.sms_id == sms_id,
-        models.SmsDeliveryReports.user_id == user.id
+        # models.SmsDeliveryReports.sms_id == sms_id,
+        models.SmsDeliveryReports.id == user.id
     ).all()
     if not delivery_reports:
         raise HTTPException(detail="No delivery report found", status_code=404)

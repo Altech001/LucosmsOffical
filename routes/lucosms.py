@@ -87,7 +87,7 @@ async def send_sms(
         sms_messages = []
         for recipient in sms.recipient:
             sms_message = models.SmsMessages(
-                user_id=user.clerk_user_id,
+                user_id=user.id,
                 recipient=recipient,
                 message=sms.message,
                 status="sent",
@@ -96,7 +96,7 @@ async def send_sms(
             sms_messages.append(sms_message)
             
             transaction = models.Transactions(
-                user_id=user.clerk_user_id,
+                user_id=user.id,
                 amount=-SMS_COST,
                 transaction_type="sms_deduction"
             )
