@@ -67,7 +67,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://lucosms-ui.vercel.app","https://lucosms-ui.vercel.app"],
+    allow_origins=["https://lucosms-ui.vercel.app", "https://lucosms-ui.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

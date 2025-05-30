@@ -100,7 +100,7 @@ def sms_template(template: SMSTemplate, db: Session = Depends(get_db), user_sess
     sms_template = models.SmsTemplates(
         user_id=user.id,
         name=template.name,
-        content=template.cotent
+        content=template.content
     )
     db.add(sms_template)
     db.commit()
