@@ -195,17 +195,17 @@ def get_user_transactions(user_id: str, db: Session = Depends(get_db)):
     transactions = db.query(models.Transactions).filter(models.Transactions.user_id == user_id).all()
     return transactions
 
-@admin_router.post("/transactions", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
-def create_transaction(transaction: TransactionCreate, db: Session = Depends(get_db)):
-    db_user = db.query(models.Users).filter(models.Users.id == transaction.user_id).first()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
+# @admin_router.post("/transactions", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
+# def create_transaction(transaction: TransactionCreate, db: Session = Depends(get_db)):
+#     db_user = db.query(models.Users).filter(models.Users.id == transaction.user_id).first()
+#     if not db_user:
+#         raise HTTPException(status_code=404, detail="User not found")
     
-    new_transaction = models.Transactions(**transaction.dict())
-    db.add(new_transaction)
-    db.commit()
-    db.refresh(new_transaction)
-    return new_transaction
+#     new_transaction = models.Transactions(**transaction.dict())
+#     db.add(new_transaction)
+#     db.commit()
+#     db.refresh(new_transaction)
+#     return new_transaction
 
 # SMS Message endpoints
 @admin_router.get("/sms_messages", response_model=List[SmsMessageResponse])
