@@ -16,6 +16,7 @@ from routes.lucosms import sms_router
 
 from routes.lucoapi import router
 from routes.clientsms import luco_router
+from routes.admin.admin import admin_router
 
 from controllers.autodelete import auto_delete_router
 import logging
@@ -99,3 +100,5 @@ app.include_router(router=sms_router)
 app.include_router(router=router)
 app.include_router(router=luco_router)
 app.include_router(router=auto_delete_router)
+
+app.include_router(router=admin_router)
