@@ -218,44 +218,6 @@ def get_user_sms_messages(user_id: str, db: Session = Depends(get_db)):
     sms_messages = db.query(models.SmsMessages).filter(models.SmsMessages.user_id == user_id).all()
     return sms_messages
 
-@admin_router.post("/sms_messages", response_model=SmsMessageResponse, status_code=status.HTTP_201_CREATED)
-def create_sms_message(sms: SmsMessageCreate, db: Session = Depends(get_db)):
-    db_user = db.query(models.Users).filter(models.Users.id == sms.user_id).first()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    if len(sms.message) > 160:
-        raise HTTPException(status_code=400, detail="Message exceeds 160 characters")
-    
-    new_sms = models.SmsMessages(**sms.dict())
-    db.add(new_sms)
-    db.commit()
-    db.refresh(new_sms)
-    return new_sms
-
-@admin_router.post("/sms_messages/bulk", status_code=status.HTTP_201_CREATED)
-def send_bulk_message(bulk: BulkMessageCreate, db: Session = Depends(get_db)):
-    if len(bulk.message) > 160:
-        raise HTTPException(status_code=400, detail="Message exceeds 160 characters")
-    
-    users = db.query(models.Users).all()
-    if not users:
-        raise HTTPException(status_code=404, detail="No users found")
-    
-    sent_count = 0
-    for user in users:
-        new_sms = models.SmsMessages(
-            user_id=user.id,
-            recipient=user.email,  # Assuming email as recipient; modify if phone number is available
-            message=bulk.message,
-            status="pending",
-            cost=bulk.cost
-        )
-        db.add(new_sms)
-        sent_count += 1
-    
-    db.commit()
-    return {"message": f"Sent message to {sent_count} users"}
 
 # SMS Delivery Report endpoints
 @admin_router.get("/sms_delivery_reports", response_model=List[SmsDeliveryReportResponse])
@@ -392,4 +354,4 @@ def recalculate_wallet_balances(db: Session = Depends(get_db)):
             updated_count += 1
     
     db.commit()
-    return {"message": f"Recalculated balances for {updated_count} users"}
+    return {"message": f"Recalculated balances for {updated_count} users {user.wallet_balance}"}
