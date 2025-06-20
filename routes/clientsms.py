@@ -15,7 +15,7 @@ luco_router = APIRouter(
     tags=["LucoSMS API"]
 )
 
-SMS_COST = 32.0
+SMS_COST = 30.0
 
 @luco_router.post("/send-sms", response_model=SMSMessageResponse)
 # @api_rate_limit()  # Apply API rate limiting (100/minute)
