@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 # SQLALCHEMY_DATABASE_URL = "postgresql://postgres:altech@001@localhost:5432/luco"
 
-DB_URI = "postgresql://testdb_ejog_user:LDlnkCB0nhP1OwmputkywIEncu6p5mPX@dpg-d0oa11re5dus73b9g6a0-a.oregon-postgres.render.com/testdb_ejog"
+DB_URI = "postgresql://lucosms_fr6s_user:XW8sLMPg8BPAKJmKbyymPokMLJZx2oia@dpg-d1c5d8euk2gs73acoa8g-a.oregon-postgres.render.com/lucosms_fr6s"
 # DB_URI = "postgresql://postgres:xecmKsNUQBtnuitVSwuKuzaVkGlnFmcT@shinkansen.proxy.rlwy.net:46354/railway"
 engine = create_engine(DB_URI, connect_args={"sslmode": "require"})
 
