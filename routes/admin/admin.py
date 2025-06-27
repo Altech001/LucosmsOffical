@@ -184,6 +184,26 @@ def topup_wallet(user_id: str, topup: WalletTopup, db: Session = Depends(get_db)
     db.refresh(db_user)
     return db_user
 
+@admin_router.post("/wallet/{user_id}/topup", response_model=UserResponse)
+def topup_wallet(user_id: str, topup: WalletTopup, db: Session = Depends(get_db)):
+    if topup.amount <= 0:
+        raise HTTPException(status_code=400, detail="Top-up amount must be positive")
+    
+    db_user = db.query(models.Users).filter(models.Users.clerk_user_id == user_id).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    db_user.wallet_balance += topup.amount
+    new_transaction = models.Transactions(
+        user_id=db_user.id,
+        amount=topup.amount,
+        transaction_type="credit"
+    )
+    db.add(new_transaction)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
 # Transaction endpoints
 @admin_router.get("/transactions", response_model=List[TransactionResponse])
 def get_all_transactions(db: Session = Depends(get_db)):
