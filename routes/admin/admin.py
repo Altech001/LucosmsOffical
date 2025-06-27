@@ -184,7 +184,7 @@ def topup_wallet(user_id: str, topup: WalletTopup, db: Session = Depends(get_db)
     db.refresh(db_user)
     return db_user
 
-@admin_router.post("/wallet/{user_id}/topup", response_model=UserResponse)
+@admin_router.post("/userwallet/{user_id}/topup", response_model=UserResponse)
 def topup_wallet(user_id: str, topup: WalletTopup, db: Session = Depends(get_db)):
     if topup.amount <= 0:
         raise HTTPException(status_code=400, detail="Top-up amount must be positive")
