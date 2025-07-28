@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 
-DB_URI = "postgresql://lucosms_fr6s_user:XW8sLMPg8BPAKJmKbyymPokMLJZx2oia@dpg-d1c5d8euk2gs73acoa8g-a.oregon-postgres.render.com/lucosms_fr6s"
+DB_URI = "postgresql://lucosms_w46s_user:UD5A6LCCY9ujR7cN3lXcYY0fnIMrAogv@dpg-d23fadre5dus73aip1h0-a.oregon-postgres.render.com/lucosms_w46s"
 
 engine = create_engine(DB_URI, connect_args={"sslmode": "require"})
 
