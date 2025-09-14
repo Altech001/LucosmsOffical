@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 
-DB_URI = "postgresql://lucosms_w46s_user:UD5A6LCCY9ujR7cN3lXcYY0fnIMrAogv@dpg-d23fadre5dus73aip1h0-a.oregon-postgres.render.com/lucosms_w46s"
+DB_URI = "postgresql://neondb_owner:npg_pYVCkb5MKvI3@ep-polished-term-a9pwe21p-pooler.gwc.azure.neon.tech/neondb?sslmode=require&channel_binding=require"
 
 engine = create_engine(DB_URI, connect_args={"sslmode": "require"})
 
