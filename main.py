@@ -63,7 +63,7 @@ async def lifespan(app: FastAPI):
     
     task.cancel()
 
-origins = ["https://lucosms-ui.vercel.app", "https://lucosms-ui.vercel.app", "*"]
+origins = ["https://lucosms-ui.vercel.app", "https://lucosms-ui.vercel.app", "*", "http://localhost:3000"]
 
 
 app = FastAPI(lifespan=lifespan)
